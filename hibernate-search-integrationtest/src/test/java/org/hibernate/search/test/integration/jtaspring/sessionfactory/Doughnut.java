@@ -1,4 +1,4 @@
-package org.hibernate.search.test.integration.jtaspring;
+package org.hibernate.search.test.integration.jtaspring.sessionfactory;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,11 +26,16 @@ public class Doughnut {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long doughnutId;
 	
-	@ManyToOne
-	private Box box;
-	
 	@Column(length = 255,nullable=false)
 	private String kind;
+
+        private Doughnut() {
+		// Private no-arg constructor for Hibernate;
+	}
+
+	public Doughnut(String kind) {
+		this.kind = kind;
+	}
 
 	/**
 	 * @return the doughnutId
@@ -44,20 +49,6 @@ public class Doughnut {
 	 */
 	public void setDoughnutId(Long doughnutId) {
 		this.doughnutId = doughnutId;
-	}
-
-	/**
-	 * @return the box
-	 */
-	public Box getBox() {
-		return box;
-	}
-
-	/**
-	 * @param box the box to set
-	 */
-	public void setBox(Box box) {
-		this.box = box;
 	}
 
 	/**

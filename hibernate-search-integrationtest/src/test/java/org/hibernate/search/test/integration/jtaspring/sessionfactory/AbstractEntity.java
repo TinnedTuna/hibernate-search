@@ -1,4 +1,4 @@
-package org.hibernate.search.test.integration.jtaspring;
+package org.hibernate.search.test.integration.jtaspring.sessionfactory;
 
 import java.util.UUID;
 

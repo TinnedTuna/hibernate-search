@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+						http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+						http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+	<bean id="dataSource" class="bitronix.tm.resource.jdbc.PoolingDataSource" init-method="init" destroy-method="close">
+		<property name="className" value="org.h2.jdbcx.JdbcDataSource" />
+		<property name="uniqueName" value="xaDataSource" />
+		<property name="allowLocalTransactions" value="true"/>
+		<property name="minPoolSize" value="5" />
+		<property name="maxPoolSize" value="100" />
+		<property name="maxIdleTime" value="100" />
+		<property name="testQuery" value="select 1+1 as sum" />
+		<property name="driverProperties">
+			<props>
+				<prop key="URL">jdbc:h2:mem:foobar</prop>
+				<!-- <property key="user">root</prop>
+				<prop key="password"></prop> -->
+			</props>
+		</property>
+	</bean>
+
+	<!--
+		Process @PersistenceContext to inject entity manager factory
+	-->
+	<bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
+
+	<!--
+		process @Transactional to create transaction proxies
+	-->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+    <context:component-scan base-package="org.hibernate.search.test.integration.jtaspring.sessionfactory"/>
+
+	<bean id="hibernateJpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+		<property name="database" value="H2" />
+		<property name="showSql" value="false" />
+		<property name="generateDdl" value="false" />
+	</bean>
+
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="packagesToScan" value="org.hibernate.search.test.integration.jtaspring.sessionfactory"/>
+		<property name="dataSource" ref="dataSource"/>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.H2Dialect</prop>
+				<prop key="hibernate.hbm2ddl.auto">create-drop</prop>
+				<prop key="hibernate.jdbc.batch_size">400</prop>
+				<prop key="hibernate.jdbc.fetch_size">200</prop>
+				<prop key="hibernate.jdbc.wrap_result_sets">true</prop>
+				<prop key="hibernate.generate_statistics">true</prop>
+				<!-- 2 is TRANSACTION_READ_COMMITTED -->
+				<prop key="hibernate.connection.isolation">2</prop>
+				<!-- http://docs.jboss.org/hibernate/core/3.3/reference/en/html/architecture.html#architecture-current-session -->
+				<prop key="hibernate.current_session_context_class">org.hibernate.context.JTASessionContext</prop>
+				
+				<!--  trying things to make Oracle happy -->
+				<prop key="hibernate.jdbc.batch_size">0</prop>
+
+				<!-- second level cache config for all cache providers -->
+				<prop key="hibernate.cache.use_second_level_cache">false</prop>
+				<prop key="hibernate.cache.use_query_cache">false</prop>
+				<prop key="hibernate.cache.region_prefix">integration</prop>
+				<prop key="hibernate.pacakges_to_scan">
+						org.hibernate.search.test.integration.jtaspring.sessionfactory
+				</prop>
+
+				<!-- second level cache - Infinispan --> 
+				<!-- <property key="hibernate.cache.region.factory_class" value="org.hibernate.cache.infinispan.InfinispanRegionFactory" /> -->  
+				<!-- With statistics on transaction would not commit -->
+				<!-- <property key="hibernate.cache.infinispan.statistics" value="true"/> -->
+				
+				<!--  Atomikos JTA for Hibernate, required to get this JPA provider involved in JTA  -->
+				<!-- no value should be setup for hibernate.transaction.factory_class, it is not required -->
+				<prop key="hibernate.transaction.manager_lookup_class">org.hibernate.transaction.BTMTransactionManagerLookup</prop>  
+				
+				<!-- Hibernate Search -->
+				<prop key="hibernate.search.default.indexBase">.</prop>
+				<prop key="hibernate.search.default.directory_provider">ram</prop>
+				<prop key="hibernate.search.worker.execution">async</prop>
+				<prop key="hibernate.search.default.optimizer.transaction_limit.max">100</prop>
+				<prop key="hibernate.search.worker.thread_pool.size">1</prop>
+				<prop key="hibernate.search.worker.buffer_queue.max">1000000</prop>
+				<prop key="hibernate.current_session_context_class">thread</prop>
+
+			</props>
+		</property>
+	</bean>
+
+
+	<!-- From http://docs.codehaus.org/display/BTM/Spring+Framework13 -->
+	<!--  Bitronix Transaction Manager embedded configuration -->
+	<bean id="btmConfig" factory-method="getConfiguration" class="bitronix.tm.TransactionManagerServices">
+		<!--  property serverId should not be set when BTMTransactionManagerLookup is configured as the 
+			  hibernate transaction manager lookup class -->
+		<!-- <property name="serverId" value="spring-btm" /> -->
+        <property name="journal" value="null"/>
+	</bean>
+	
+	<!-- create BTM transaction manager -->
+	<bean id="BitronixTransactionManager" factory-method="getTransactionManager"
+		class="bitronix.tm.TransactionManagerServices" depends-on="btmConfig,dataSource" destroy-method="shutdown" />
+
+	<!-- Spring JtaTransactionManager -->
+	<bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
+		<property name="transactionManager" ref="BitronixTransactionManager" />
+		<property name="userTransaction" ref="BitronixTransactionManager" />
+	</bean>
+
+	<bean id="doughnutDAO" class="org.hibernate.search.test.integration.jtaspring.sessionfactory.DoughnutDAO">
+		<constructor-arg ref="sessionFactory"/>
+	</bean>
+
+</beans>
+
