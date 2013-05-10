@@ -43,17 +43,12 @@ public class DoughnutDAOTest {
 	@Test
 	public void test() {
 		Transaction tx = doughnutDAO.beginTransaction();
-		try {
-			Doughnut d = new Doughnut("Test");
-			Long doughnutId = doughnutDAO.save( d );
-			d = doughnutDAO.read( doughnutId );
-			List<Doughnut> doughnuts = doughnutDAO.findByKind( "Test" );
-			assert doughnuts != null;
-			assert doughnuts.size() == 1;
-			assert doughnuts.contains( d );
-		}
-		finally {
-			tx.rollback();
-		}
+		Doughnut d = new Doughnut("Test");
+		Long doughnutId = doughnutDAO.save( d );
+		d = doughnutDAO.read( doughnutId );
+		List<Doughnut> doughnuts = doughnutDAO.findByKind( "Test" );
+		assert doughnuts != null;
+		assert doughnuts.size() == 1;
+		assert doughnuts.contains( d );
 	}
 }
