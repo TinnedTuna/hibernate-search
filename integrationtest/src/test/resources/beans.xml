@@ -34,7 +34,7 @@
 	-->
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
-    <context:component-scan base-package="org.hibernate.search.test.integration.jtaspring.entitymanager"/>
+	<context:component-scan base-package="org.hibernate.search.test.integration.jtaspring.entitymanager"/>
 
 	<bean id="hibernateJpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
 		<property name="database" value="H2" />

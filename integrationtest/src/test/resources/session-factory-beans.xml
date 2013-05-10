@@ -9,7 +9,7 @@
 
 	<bean id="dataSource" class="bitronix.tm.resource.jdbc.PoolingDataSource" init-method="init" destroy-method="close">
 		<property name="className" value="org.h2.jdbcx.JdbcDataSource" />
-		<property name="uniqueName" value="xaDataSource" />
+		<property name="uniqueName" value="xaDataSourceSessionFactory" />
 		<property name="allowLocalTransactions" value="true"/>
 		<property name="minPoolSize" value="5" />
 		<property name="maxPoolSize" value="100" />
@@ -111,7 +111,7 @@
 		<property name="userTransaction" ref="BitronixTransactionManager" />
 	</bean>
 
-	<bean id="doughnutDAO" class="org.hibernate.search.test.integration.jtaspring.sessionfactory.DoughnutDAO">
+	<bean id="cookieDAO" class="org.hibernate.search.test.integration.jtaspring.sessionfactory.CookieDAO">
 		<constructor-arg ref="sessionFactory"/>
 	</bean>
 

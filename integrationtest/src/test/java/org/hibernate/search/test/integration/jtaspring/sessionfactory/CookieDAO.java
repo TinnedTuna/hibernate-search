@@ -18,48 +18,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.search.test.integration.jtaspring.entitymanager;
+package org.hibernate.search.test.integration.jtaspring.sessionfactory;
 
-import javax.inject.Inject;
+import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.SessionFactory;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath*:beans.xml" })
-public class JtaAndSpringMoreComplexTest {
-	@Inject
-	private BoxDAO boxDAO;
+import org.springframework.stereotype.Repository;
 
-	@Test
-	public void testMufins() throws Exception {
-		Box box = new Box();
-		box.setColor( "red-and-white" );
-		boxDAO.persist( box );
 
-		Muffin muffin = new Muffin();
-		muffin.setKind( "blueberry" );
-		muffin.setBox( box );
+@Repository
+public class CookieDAO extends AbstractDAO<Cookie,Long> {
 
-		box.addMuffin( muffin );
-
-		boxDAO.merge( box );
+	public CookieDAO() {
+		this.setType( Cookie.class );
 	}
 
-	@Test
-	public void testDoughnuts() throws Exception {
-		Box box = new Box();
-		box.setColor( "red-and-white" );
-		boxDAO.persist( box );
+	public CookieDAO(SessionFactory sf) {
+		super( Cookie.class, sf );
+	}
 
-		Doughnut doughnut = new Doughnut();
-		doughnut.setKind( "glazed" );
-		doughnut.setBox( box );
-
-		box.addDoughnut( doughnut );
-
-		boxDAO.merge( box );
+	public List<Cookie> findByKind(String kind) {
+		Criteria c = getSession().createCriteria( Cookie.class )
+			.add( Restrictions.eq( "kind", kind ) );
+		return c.list();
 	}
 }

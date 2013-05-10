@@ -2,11 +2,11 @@
 
     <persistence-unit name="integration" transaction-type="JTA">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
-        <class>org.hibernate.search.test.integration.jtaspring.Snert</class>
-        <class>org.hibernate.search.test.integration.jtaspring.Container</class>
-        <class>org.hibernate.search.test.integration.jtaspring.Box</class>
-        <class>org.hibernate.search.test.integration.jtaspring.Doughnut</class>
-        <class>org.hibernate.search.test.integration.jtaspring.Muffin</class>
+        <class>org.hibernate.search.test.integration.jtaspring.entitymanager.Snert</class>
+        <class>org.hibernate.search.test.integration.jtaspring.entitymanager.Container</class>
+        <class>org.hibernate.search.test.integration.jtaspring.entitymanager.Box</class>
+        <class>org.hibernate.search.test.integration.jtaspring.entitymanager.Doughnut</class>
+        <class>org.hibernate.search.test.integration.jtaspring.entitymanager.Muffin</class>
     </persistence-unit>
 
     <persistence-unit name="jbossjta" transaction-type="JTA">

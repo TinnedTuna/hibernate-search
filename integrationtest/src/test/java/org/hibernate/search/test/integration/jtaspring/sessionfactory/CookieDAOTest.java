@@ -18,48 +18,35 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.search.test.integration.jtaspring.entitymanager;
+package org.hibernate.search.test.integration.jtaspring.sessionfactory;
 
 import javax.inject.Inject;
 
+import java.util.List;
+
+import org.hibernate.Transaction;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath*:beans.xml" })
-public class JtaAndSpringMoreComplexTest {
+@ContextConfiguration(locations = { "classpath*:session-factory-beans.xml" } )
+public class CookieDAOTest {
 	@Inject
-	private BoxDAO boxDAO;
+	private CookieDAO cookieDAO;
 
 	@Test
-	public void testMufins() throws Exception {
-		Box box = new Box();
-		box.setColor( "red-and-white" );
-		boxDAO.persist( box );
-
-		Muffin muffin = new Muffin();
-		muffin.setKind( "blueberry" );
-		muffin.setBox( box );
-
-		box.addMuffin( muffin );
-
-		boxDAO.merge( box );
-	}
-
-	@Test
-	public void testDoughnuts() throws Exception {
-		Box box = new Box();
-		box.setColor( "red-and-white" );
-		boxDAO.persist( box );
-
-		Doughnut doughnut = new Doughnut();
-		doughnut.setKind( "glazed" );
-		doughnut.setBox( box );
-
-		box.addDoughnut( doughnut );
-
-		boxDAO.merge( box );
+	public void test() {
+		Transaction tx = cookieDAO.beginTransaction();
+		Cookie d = new Cookie("Test");
+		Long cookieId = cookieDAO.save( d );
+		d = cookieDAO.read( cookieId );
+		List<Cookie> cookies = cookieDAO.findByKind( "Test" );
+		assert cookies != null;
+		assert cookies.size() == 1;
+		assert cookies.contains( d );
 	}
 }
